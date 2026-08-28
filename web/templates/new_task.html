@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}مهمة جديدة - Getoken{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-plus-circle me-2"></i>إنشاء مهمة جديدة</h1>
+    <p>إضافة مهمة تقييم جديدة</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="content-card">
+            <form method="POST" action="/tasks/new">
+                <!-- Target URL -->
+                <div class="mb-4">
+                    <label for="target_url" class="form-label">
+                        <i class="fas fa-link me-2"></i>
+                        رابط الهدف
+                    </label>
+                    <input type="url" 
+                           class="form-control form-control-lg" 
+                           id="target_url" 
+                           name="target_url" 
+                           placeholder="https://www.facebook.com/..." 
+                           required>
+                    <small class="text-muted">رابط البروفايل، الصفحة، المنشور، أو المتجر</small>
+                </div>
+                
+                <!-- Target Type -->
+                <div class="mb-4">
+                    <label for="target_type" class="form-label">
+                        <i class="fas fa-tag me-2"></i>
+                        نوع الهدف
+                    </label>
+                    <select class="form-select form-select-lg" id="target_type" name="target_type" required>
+                        <option value="profile">بروفايل شخصي</option>
+                        <option value="page">صفحة</option>
+                        <option value="post">منشور</option>
+                        <option value="marketplace">متجر Marketplace</option>
+                    </select>
+                </div>
+                
+                <!-- Rating Type -->
+                <div class="mb-4">
+                    <label for="rating_type" class="form-label">
+                        <i class="fas fa-star me-2"></i>
+                        نوع التقييم
+                    </label>
+                    <select class="form-select form-select-lg" id="rating_type" name="rating_type" required>
+                        <option value="stars">نجوم فقط</option>
+                        <option value="comments">تعليقات فقط</option>
+                        <option value="both">نجوم + تعليقات</option>
+                    </select>
+                </div>
+                
+                <!-- Total Ratings -->
+                <div class="mb-4">
+                    <label for="total_ratings" class="form-label">
+                        <i class="fas fa-hashtag me-2"></i>
+                        عدد التقييمات المطلوبة
+                    </label>
+                    <input type="number" 
+                           class="form-control form-control-lg" 
+                           id="total_ratings" 
+                           name="total_ratings" 
+                           min="1" 
+                           max="100" 
+                           value="10" 
+                           required>
+                    <small class="text-muted">الحد الأقصى: 100 تقييم</small>
+                </div>
+                
+                <!-- Star Range -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="min_stars" class="form-label">
+                            <i class="fas fa-star-half-alt me-2"></i>
+                            الحد الأدنى للنجوم
+                        </label>
+                        <select class="form-select form-select-lg" id="min_stars" name="min_stars">
+                            <option value="3" selected>3 نجوم</option>
+                            <option value="4">4 نجوم</option>
+                            <option value="5">5 نجوم</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="max_stars" class="form-label">
+                            <i class="fas fa-star me-2"></i>
+                            الحد الأقصى للنجوم
+                        </label>
+                        <select class="form-select form-select-lg" id="max_stars" name="max_stars">
+                            <option value="4">4 نجوم</option>
+                            <option value="5" selected>5 نجوم</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Comments Toggle -->
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="comments_enabled" name="comments_enabled">
+                        <label class="form-check-label" for="comments_enabled">
+                            <i class="fas fa-comment me-2"></i>
+                            تفعيل التعليقات
+                        </label>
+                    </div>
+                    <small class="text-muted">إضافة تعليقات متنوعة مع التقييمات</small>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- Submit Buttons -->
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-gradient btn-lg flex-grow-1">
+                        <i class="fas fa-check me-2"></i>
+                        إنشاء المهمة
+                    </button>
+                    <a href="/tasks" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-times me-2"></i>
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="content-card mt-4">
+            <h4 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                مساعدة
+            </h4>
+            <div class="accordion" id="helpAccordion">
+                <div class="accordion-item" style="background: transparent; border-color: rgba(255,255,255,0.1);">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#help1" style="background: transparent; color: var(--text-light);">
+                            كيف أجد رابط الهدف الصحيح؟
+                        </button>
+                    </h2>
+                    <div id="help1" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <ul>
+                                <li>انسخ الرابط من شريط العناوين في المتصفح</li>
+                                <li>تأكد من أن الرابط عام وليس خاص</li>
+                                <li>للمتاجر، استخدم رابط صفحة المتجر في Marketplace</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item" style="background: transparent; border-color: rgba(255,255,255,0.1);">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#help2" style="background: transparent; color: var(--text-light);">
+                            كم من الوقت ستستغرق المهمة؟
+                        </button>
+                    </h2>
+                    <div id="help2" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            يعتمد على عدد التقييمات المطلوبة وعدد الحسابات المتاحة:
+                            <ul>
+                                <li>10 تقييمات ≈ 3-7 أيام</li>
+                                <li>20 تقييم ≈ 7-14 يوم</li>
+                                <li>50 تقييم ≈ 15-30 يوم</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

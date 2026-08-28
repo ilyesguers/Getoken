@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات - Getoken{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-cog me-2"></i>الإعدادات</h1>
+    <p>إعدادات النظام والبوت</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Bot Settings -->
+        <div class="content-card mb-4">
+            <h4 class="mb-4">
+                <i class="fas fa-robot me-2"></i>
+                إعدادات البوت
+            </h4>
+            
+            <div class="mb-3">
+                <label class="form-label">حالة البوت</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="bot_enabled" 
+                           {{ 'checked' if config.BOT_ENABLED else '' }}>
+                    <label class="form-check-label" for="bot_enabled">
+                        تفعيل البوت
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">فترة التحقق (بالساعات)</label>
+                <input type="number" class="form-control" id="bot_interval" 
+                       value="{{ config.BOT_INTERVAL_HOURS }}" min="1" max="168">
+                <small class="text-muted">كل كم ساعة يتحقق البوت من المهام</small>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">الحد الأقصى للحسابات يومياً</label>
+                <input type="number" class="form-control" id="max_accounts" 
+                       value="{{ config.MAX_ACCOUNTS_PER_DAY }}" min="1" max="10">
+                <small class="text-muted">عدد الحسابات الجديدة في اليوم</small>
+            </div>
+        </div>
+        
+        <!-- Anti-Detection Settings -->
+        <div class="content-card mb-4">
+            <h4 class="mb-4">
+                <i class="fas fa-shield-alt me-2"></i>
+                إعدادات مكافحة الكشف
+            </h4>
+            
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="use_proxies" 
+                           {{ 'checked' if config.USE_PROXIES else '' }}>
+                    <label class="form-check-label" for="use_proxies">
+                        استخدام Proxies
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="proxy_rotation" 
+                           {{ 'checked' if config.PROXY_ROTATION else '' }}>
+                    <label class="form-check-label" for="proxy_rotation">
+                        تدوير الـ Proxies
+                    </label>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">الحد الأدنى للتأخير (ثانية)</label>
+                    <input type="number" class="form-control" id="min_delay" 
+                           value="{{ config.MIN_DELAY_SECONDS }}" min="10" max="300">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الحد الأقصى للتأخير (ثانية)</label>
+                    <input type="number" class="form-control" id="max_delay" 
+                           value="{{ config.MAX_DELAY_SECONDS }}" min="30" max="600">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Settings -->
+        <div class="content-card mb-4">
+            <h4 class="mb-4">
+                <i class="fas fa-user-cog me-2"></i>
+                إعدادات الحسابات
+            </h4>
+            
+            <div class="mb-3">
+                <label class="form-label">فترة نضج الحساب (بالأيام)</label>
+                <input type="number" class="form-control" id="maturity_days" 
+                       value="{{ config.ACCOUNT_MATURITY_DAYS }}" min="7" max="30">
+                <small class="text-muted">كم يوم ينتظر الحساب قبل أن يصبح جاهزاً</small>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">الحد الأقصى للتقييمات لكل حساب</label>
+                <input type="number" class="form-control" id="max_ratings" 
+                       value="{{ config.MAX_RATINGS_PER_ACCOUNT }}" min="5" max="50">
+                <small class="text-muted">كم تقييم يمكن أن يتركه الحساب الواحد</small>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">فترة بين التقييمات (بالأيام)</label>
+                <input type="number" class="form-control" id="rating_interval" 
+                       value="{{ config.RATING_INTERVAL_DAYS }}" min="1" max="7">
+            </div>
+        </div>
+        
+        <!-- Save Button -->
+        <button class="btn btn-gradient btn-lg" onclick="saveSettings()">
+            <i class="fas fa-save me-2"></i>
+            حفظ الإعدادات
+        </button>
+    </div>
+    
+    <!-- Sidebar Info -->
+    <div class="col-md-4">
+        <div class="content-card">
+            <h4 class="mb-3">
+                <i class="fas fa-info-circle me-2"></i>
+                معلومات
+            </h4>
+            <p class="text-muted">
+                هذه الإعدادات تتحكم في سلوك البوت. التغييرات ستطبق فوراً.
+            </p>
+            
+            <hr style="border-color: rgba(255,255,255,0.1);">
+            
+            <h5 class="mb-3">
+                <i class="fas fa-lightbulb me-2"></i>
+                نصائح
+            </h5>
+            <ul class="list-unstyled text-muted">
+                <li class="mb-2">
+                    <i class="fas fa-check text-success me-2"></i>
+                    استخدم فترات تأخير أطول للأمان
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-check text-success me-2"></i>
+                    فعّل تدوير الـ Proxies
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-check text-success me-2"></i>
+                    ابدأ بعدد قليل من التقييمات
+                </li>
+                <li>
+                    <i class="fas fa-check text-success me-2"></i>
+                    راقب النشاط بانتظام
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function saveSettings() {
+        const settings = {
+            bot_enabled: document.getElementById('bot_enabled').checked,
+            bot_interval: document.getElementById('bot_interval').value,
+            max_accounts: document.getElementById('max_accounts').value,
+            use_proxies: document.getElementById('use_proxies').checked,
+            proxy_rotation: document.getElementById('proxy_rotation').checked,
+            min_delay: document.getElementById('min_delay').value,
+            max_delay: document.getElementById('max_delay').value,
+            maturity_days: document.getElementById('maturity_days').value,
+            max_ratings: document.getElementById('max_ratings').value,
+            rating_interval: document.getElementById('rating_interval').value,
+        };
+        
+        // TODO: Implement API call to save settings
+        alert('تم حفظ الإعدادات بنجاح');
+        console.log('Settings:', settings);
+    }
+</script>
+{% endblock %}

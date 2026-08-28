@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}التحليلات - Getoken{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chart-bar me-2"></i>التحليلات المتقدمة</h1>
+    <p>إحصائيات وتحليلات مفصلة عن أداء النظام</p>
+</div>
+
+<!-- Efficiency Card -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card text-center">
+            <h2 class="display-1 gradient-text">{{ efficiency.grade }}</h2>
+            <p class="stat-label">تقييم الكفاءة</p>
+            <h3>{{ efficiency.overall_efficiency }}%</h3>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="content-card">
+            <h5 class="mb-3">مؤشرات الكفاءة</h5>
+            <div class="mb-3">
+                <label class="form-label">استخدام الحسابات: <strong>{{ efficiency.account_utilization }}%</strong></label>
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar bg-success" style="width: {{ efficiency.account_utilization }}%"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">نسبة نجاح التقييمات: <strong>{{ efficiency.rating_success_rate }}%</strong></label>
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar bg-info" style="width: {{ efficiency.rating_success_rate }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Daily Stats Chart -->
+    <div class="col-md-8">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-chart-line me-2"></i>
+                النشاط اليومي (آخر 14 يوم)
+            </h4>
+            <canvas id="dailyChart" height="300"></canvas>
+        </div>
+    </div>
+    
+    <!-- Star Distribution -->
+    <div class="col-md-4">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-star me-2"></i>
+                توزيع النجوم
+            </h4>
+            <canvas id="starChart" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Predictions & Errors -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-crystal-ball me-2"></i>
+                التوقعات (الأسبوع القادم)
+            </h4>
+            {% if predictions.get('predicted_accounts_7days') %}
+            <div class="row text-center">
+                <div class="col-6">
+                    <h3 class="gradient-text">{{ predictions.predicted_accounts_7days }}</h3>
+                    <p class="text-muted">حسابات متوقعة</p>
+                </div>
+                <div class="col-6">
+                    <h3 class="gradient-text">{{ predictions.predicted_ratings_7days }}</h3>
+                    <p class="text-muted">تقييمات متوقعة</p>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1);">
+            <div class="row text-center">
+                <div class="col-6">
+                    <h5>{{ predictions.daily_avg_accounts }}</h5>
+                    <small class="text-muted">متوسط يومي (حسابات)</small>
+                </div>
+                <div class="col-6">
+                    <h5>{{ predictions.daily_avg_ratings }}</h5>
+                    <small class="text-muted">متوسط يومي (تقييمات)</small>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-3">
+                <i class="fas fa-info-circle me-2"></i>
+                لا توجد بيانات كافية للتوقعات
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                تحليل الأخطاء (آخر 7 أيام)
+            </h4>
+            {% if error_analysis.total_errors > 0 %}
+            <h2 class="text-danger text-center">{{ error_analysis.total_errors }}</h2>
+            <p class="text-center text-muted mb-3">إجمالي الأخطاء</p>
+            <ul class="list-group list-group-flush">
+                {% for error_type, count in error_analysis.by_type.items() %}
+                <li class="list-group-item d-flex justify-content-between" style="background: transparent; color: var(--text-light); border-color: rgba(255,255,255,0.1);">
+                    {{ error_type }}
+                    <span class="badge bg-danger">{{ count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="text-center py-3">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h5>لا توجد أخطاء</h5>
+                <p class="text-muted">النظام يعمل بشكل مثالي</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Top Accounts -->
+<div class="content-card mb-4">
+    <h4 class="mb-4">
+        <i class="fas fa-trophy me-2"></i>
+        أفضل الحسابات أداءً
+    </h4>
+    {% if top_accounts %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>الحالة</th>
+                    <th>التقييمات</th>
+                    <th>التعليقات</th>
+                    <th>الإعجابات</th>
+                    <th>تاريخ الإنشاء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for acc in top_accounts %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ acc.name }}</strong></td>
+                    <td>
+                        <span class="badge bg-success badge-status">{{ acc.status }}</span>
+                    </td>
+                    <td><i class="fas fa-star text-warning me-1"></i>{{ acc.ratings }}</td>
+                    <td><i class="fas fa-comment text-info me-1"></i>{{ acc.comments }}</td>
+                    <td><i class="fas fa-thumbs-up text-primary me-1"></i>{{ acc.likes }}</td>
+                    <td>{{ acc.created[:10] if acc.created else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted py-4">لا توجد حسابات بعد</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Daily Chart
+    const dailyData = {{ daily_stats | tojson }};
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: dailyData.map(d => d.date),
+            datasets: [
+                {
+                    label: 'حسابات جديدة',
+                    data: dailyData.map(d => d.accounts_created),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                },
+                {
+                    label: 'تقييمات ناجحة',
+                    data: dailyData.map(d => d.ratings_success),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#e2e8f0' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                y: {
+                    ticks: { color: '#a0aec0' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                }
+            }
+        }
+    });
+    
+    // Star Distribution Chart
+    const starData = {{ star_distribution | tojson }};
+    const starCtx = document.getElementById('starChart').getContext('2d');
+    
+    new Chart(starCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(starData).map(k => k + ' نجوم'),
+            datasets: [{
+                data: Object.values(starData),
+                backgroundColor: [
+                    '#ef4444',
+                    '#f59e0b',
+                    '#eab308',
+                    '#84cc16',
+                    '#10b981',
+                ],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#e2e8f0' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
