@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - Getoken{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt me-2"></i>لوحة التحكم</h1>
+    <p>نظرة عامة على حالة النظام</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.total_accounts }}</h3>
+            <p class="stat-label">إجمالي الحسابات</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.active_accounts }}</h3>
+            <p class="stat-label">حسابات نشطة</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.ready_accounts }}</h3>
+            <p class="stat-label">حسابات جاهزة</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon red">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.pending_tasks }}</h3>
+            <p class="stat-label">مهام معلقة</p>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row Stats -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="stat-number">{{ stats.total_tasks }}</h3>
+                    <p class="stat-label">إجمالي المهام</p>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="stat-number">{{ stats.total_ratings }}</h3>
+                    <p class="stat-label">إجمالي التقييمات</p>
+                </div>
+                <div class="stat-icon green">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="stat-number">{{ stats.success_rate }}%</h3>
+                    <p class="stat-label">نسبة النجاح</p>
+                </div>
+                <div class="stat-icon orange">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity & Quick Actions -->
+<div class="row g-4">
+    <!-- Recent Activity -->
+    <div class="col-md-8">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-history me-2"></i>
+                النشاط الأخير
+            </h4>
+            
+            {% if recent_logs %}
+                {% for log in recent_logs[:10] %}
+                <div class="activity-item {{ log.level }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>{{ log.message }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else 'N/A' }}
+                            </small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if log.level == 'info' else 'danger' if log.level == 'error' else 'warning' }}">
+                            {{ log.level }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <br>
+                    لا يوجد نشاط حتى الآن
+                </p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+        <div class="content-card">
+            <h4 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                إجراءات سريعة
+            </h4>
+            
+            <div class="d-grid gap-3">
+                <a href="/tasks/new" class="btn btn-gradient btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    مهمة جديدة
+                </a>
+                
+                <button class="btn btn-outline-light btn-lg" onclick="createAccount()">
+                    <i class="fas fa-user-plus me-2"></i>
+                    إنشاء حساب
+                </button>
+                
+                <button class="btn btn-outline-light btn-lg" onclick="refreshStatus()">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    تحديث الحالة
+                </button>
+                
+                <a href="/accounts" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-users me-2"></i>
+                    عرض الحسابات
+                </a>
+                
+                <a href="/tasks" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-tasks me-2"></i>
+                    عرض المهام
+                </a>
+            </div>
+        </div>
+        
+        <!-- System Info -->
+        <div class="content-card mt-4">
+            <h4 class="mb-3">
+                <i class="fas fa-server me-2"></i>
+                معلومات النظام
+            </h4>
+            <ul class="list-unstyled">
+                <li class="mb-2">
+                    <i class="fas fa-circle text-success me-2"></i>
+                    <strong>الحالة:</strong> متصل
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-database me-2"></i>
+                    <strong>قاعدة البيانات:</strong> فعالة
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-robot me-2"></i>
+                    <strong>البوت:</strong> نشط
+                </li>
+                <li>
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>الحماية:</strong> مفعلة
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createAccount() {
+        if (confirm('هل تريد إنشاء حساب جديد؟')) {
+            fetch('/api/accounts/create', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم بدء إنشاء الحساب');
+                        location.reload();
+                    } else {
+                        alert('خطأ: ' + data.message);
+                    }
+                });
+        }
+    }
+    
+    function refreshStatus() {
+        location.reload();
+    }
+    
+    // Auto-refresh every 30 seconds
+    setTimeout(() => {
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                console.log('Status:', data);
+            });
+    }, 30000);
+</script>
+{% endblock %}

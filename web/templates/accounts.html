@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}الحسابات - Getoken{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-users me-2"></i>إدارة الحسابات</h1>
+    <p>عرض وإدارة جميع الحسابات</p>
+</div>
+
+<!-- Filter Buttons -->
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a href="/accounts?status=all" class="btn btn-{{ 'gradient' if current_status == 'all' else 'outline-light' }}">
+            الكل
+        </a>
+        <a href="/accounts?status=maturing" class="btn btn-{{ 'gradient' if current_status == 'maturing' else 'outline-light' }}">
+            قيد النضج
+        </a>
+        <a href="/accounts?status=ready" class="btn btn-{{ 'gradient' if current_status == 'ready' else 'outline-light' }}">
+            جاهزة
+        </a>
+        <a href="/accounts?status=active" class="btn btn-{{ 'gradient' if current_status == 'active' else 'outline-light' }}">
+            نشطة
+        </a>
+        <a href="/accounts?status=banned" class="btn btn-{{ 'gradient' if current_status == 'banned' else 'outline-light' }}">
+            محظورة
+        </a>
+    </div>
+</div>
+
+<!-- Accounts Table -->
+<div class="content-card">
+    {% if accounts %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>المدينة</th>
+                    <th>الحالة</th>
+                    <th>التقييمات</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr>
+                    <td>{{ account.id }}</td>
+                    <td>
+                        <strong>{{ account.display_name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ account.gender }}</small>
+                    </td>
+                    <td>{{ account.fb_email }}</td>
+                    <td>{{ account.city or 'غير محدد' }}</td>
+                    <td>
+                        {% if account.status.value == 'creating' %}
+                            <span class="badge bg-secondary badge-status">قيد الإنشاء</span>
+                        {% elif account.status.value == 'maturing' %}
+                            <span class="badge bg-info badge-status">قيد النضج</span>
+                        {% elif account.status.value == 'ready' %}
+                            <span class="badge bg-success badge-status">جاهز</span>
+                        {% elif account.status.value == 'active' %}
+                            <span class="badge bg-primary badge-status">نشط</span>
+                        {% elif account.status.value == 'banned' %}
+                            <span class="badge bg-danger badge-status">محظور</span>
+                        {% elif account.status.value == 'suspended' %}
+                            <span class="badge bg-warning badge-status">معلق</span>
+                        {% elif account.status.value == 'retired' %}
+                            <span class="badge bg-dark badge-status">متقاعد</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <i class="fas fa-star text-warning me-1"></i>
+                        {{ account.total_ratings_given }}
+                    </td>
+                    <td>
+                        {{ account.created_at.strftime('%Y-%m-%d') if account.created_at else 'N/A' }}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount({{ account.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+            <h4>لا توجد حسابات</h4>
+            <p class="text-muted">لم يتم إنشاء أي حسابات بعد</p>
+            <button class="btn btn-gradient" onclick="createAccount()">
+                <i class="fas fa-plus me-2"></i>
+                إنشاء حساب جديد
+            </button>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createAccount() {
+        if (confirm('هل تريد إنشاء حساب جديد؟')) {
+            fetch('/api/accounts/create', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('تم بدء إنشاء الحساب');
+                        location.reload();
+                    } else {
+                        alert('خطأ: ' + data.message);
+                    }
+                });
+        }
+    }
+    
+    function deleteAccount(id) {
+        if (confirm('هل أنت متأكد من حذف هذا الحساب؟')) {
+            fetch(`/api/accounts/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('خطأ: ' + data.message);
+                    }
+                });
+        }
+    }
+</script>
+{% endblock %}
